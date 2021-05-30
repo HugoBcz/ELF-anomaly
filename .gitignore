@@ -1,0 +1,5 @@
+#list of file or folder to ignore
+
+elf-file
+__pycache__
+.vscode
