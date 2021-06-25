@@ -4,4 +4,5 @@ This project is about detecting anomaly in ELF file, all the scripts are python 
 before trying to execute the code.
 
 dependencies :
-pip install tqdm (?)
+pip install pyelftools
+pip install matplotlib
