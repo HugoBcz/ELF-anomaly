@@ -3,8 +3,11 @@
 This project is about detecting anomaly in ELF file, all the scripts are python3 based, you may need to install some packages before trying to start the program. All the dependencies are listed below. 
 
 ### Dependencies
-**pip install pyelftools**
-**pip install lief**
+
+```text
+pip install pyelftools
+pip install lief
+```
 
 ## Start the program
 
@@ -26,6 +29,7 @@ List of available options for your analysis :
 ```text
 [-w],[--write], Write the binary in a txt file
 [-e],[--entry_point], Change entry point
+[-s],[--string_table], Change string index table
 [-n],[--none], No print
 [-t], type=int, default=6, Change the default threshold for the entropy
 ```
