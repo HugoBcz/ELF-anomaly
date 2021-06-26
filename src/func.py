@@ -45,12 +45,12 @@ def compute_entry_point(file,entrypoint,e_shstrndx):
         return addr
 
 def changeEntryPoint(file, entry_point,path):
-        e_shstrndx = file.header["e_shstrndx"]
-        new_e = compute_entry_point(file, entry_point,e_shstrndx)
-        binary = lief.parse(path)
-        header = binary.header
-        header.entrypoint = new_e
-        binary.write("output/sample")
+    e_shstrndx = file.header["e_shstrndx"]
+    new_e = compute_entry_point(file, entry_point,e_shstrndx)
+    binary = lief.parse(path)
+    header = binary.header
+    header.entrypoint = new_e
+    binary.write("output/sample")
 
 
 def compute_entropy(binary):

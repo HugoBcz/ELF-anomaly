@@ -1,5 +1,6 @@
 import json
 import sys
+import lief
 
 from elftools.common.py3compat import bytes2str
 from elftools.elf.elffile import ELFFile
@@ -11,6 +12,7 @@ from func import get_section_name
 from func import get_segment_name
 from func import overlap_address
 from func import changeEntryPoint
+#from func import changeStringTableIndex
 
 class FileLoader:
 
@@ -368,10 +370,24 @@ class FileLoader:
         else:
             print("The string table index is wrong")
 
-    
+    ### Change the entry point
     def changeEPoint(self):
         changeEntryPoint(self.file,self.e_entry,self.path)
+    
+    ### Change the string index table
+    def changeSTableIndex(self):
+        ### changeStringTableIndex is in this file
+        changeStringTableIndex(self.file,self.path)
 
 
-    def test(self):
-        pass
+def changeStringTableIndex(file,path):
+    string_index = file.header["e_shstrndx"]
+    index=-1
+    for section in file.iter_sections():
+        index+=1
+        if isinstance(section,StringTableSection):
+           string_index = index
+    binary = lief.parse(path)
+    header = binary.header
+    header.section_name_table_idx = string_index
+    binary.write("output/sample")

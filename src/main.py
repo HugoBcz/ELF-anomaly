@@ -1,6 +1,7 @@
 import sys
 import argparse
 from FileLoader import FileLoader
+import lief
 
 def print_dashline():
     print("-----------------------------------------")
@@ -11,6 +12,7 @@ def main():
     parser.add_argument("path", help="path of the ELF file to analyse")
     parser.add_argument("-w", "--write", help="write the binary in a txt file", action="store_true")
     parser.add_argument("-e", "--entry_point", help="change entry point", action="store_true")
+    parser.add_argument("-s", "--string_table", help="change string table index", action="store_true")
     parser.add_argument("-n", "--none", help="no print", action="store_true")
     parser.add_argument("-t", type=int, default=6, help=" Change the default threshold for the entropy")
     args = parser.parse_args()
@@ -27,6 +29,13 @@ def main():
 
         print("Analysis begin for file : {}\n".format(path))
 
+        #Print Header
+        print_dashline()
+        print("Header\n")
+        binary = lief.parse(path)
+        header = binary.header
+        print(header)
+
         #Computation of entropy
         print_dashline()
         print("Entropy Computation\n")
@@ -40,7 +49,7 @@ def main():
         #Check for potential overlapping segments
         print_dashline()
         print("Potential overlapping segments\n")
-        print("(Segments overlapping doesn't always anomaly, look carefully to the overlap between two PT_LOAD segments)\n")
+        print("(Segments overlapping doesn't always mean anomaly, look carefully to the overlap between two PT_LOAD segments)\n")
         f.overlappingSegments()
 
         #Check for potential overlapping sections
@@ -86,6 +95,9 @@ def main():
     
     if args.entry_point:
         f.changeEPoint()
+    
+    if args.string_table:
+        f.changeSTableIndex()
 
 
 if __name__ == "__main__":

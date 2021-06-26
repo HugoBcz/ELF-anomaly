@@ -4,6 +4,7 @@ This project is about detecting anomaly in ELF file, all the scripts are python3
 
 ### Dependencies
 **pip install pyelftools**
+**pip install lief**
 
 ## Start the program
 
@@ -119,3 +120,7 @@ Prints where the entry_point points in the ELF file. If it point in the middle o
 ### Change Entry point
 
 When you select the change_entry_point option (-e), it switch the new entry point to the address of the .text section and create an new ELF file in the output directory. If there is no .text section, it doesn't change the entrypoint.
+
+### Change String table index
+
+When you select the change_string_table_index (-s), it look for a section of type **StringTableSection** in the ELF file. If it find one, it change the index string stable in the header, if not it doesn't change anything.
