@@ -54,6 +54,18 @@ def overlappingSegments(self):
 
 It checks for potential overlapping segments, when an overlap is detected, it prints the two segments that overlap together and their range. It's quite frequent that segment overlap, but the user must be careful when two PT_LOAD or PT_DYNAMIC segments overlap.
 
+Be careful, sometimes false overlap can be detected due to the address format.
+
+### Potential overlapping segments
+
+```bash
+def overlappingSections(self):
+```
+
+It checks for potential overlapping sections, when an overlap is detected, it prints the two sections that overlap together and their range. .Comment section and .String_table can overlap but it's not a problem.
+
+Be careful, sometimes false overlap can be detected due to the address format.
+
 ### Segment permissions
 
 
