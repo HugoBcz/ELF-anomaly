@@ -22,8 +22,10 @@ python3 main.py your_elffile_path --options
 
 List of available options for your analysis :
 
-*[-w],[--write], Write the binary in a txt file
-*[-t], type=int, default=6, Change the default threshold for the entropy
+```bash
+[-w],[--write], Write the binary in a txt file
+[-t], type=int, default=6, Change the default threshold for the entropy
+```
 
 ## Functionalities 
 
