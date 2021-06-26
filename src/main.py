@@ -62,6 +62,7 @@ def main():
     #Check for weird entry point
     print_dashline()
     print("Entry point\n")
+    print("(Entry point usually to PT_LOAD or PT_DYNAMIC segment and .text section)\n")
     f.entryPoint()
 
     

@@ -124,7 +124,6 @@ class FileLoader:
     #### Chech for unusual sections permissions
     def sectionPermissions(self):
         
-        #The standard primary sections have attribute defaults according their expected use
         problem = False
 
         try:
@@ -289,15 +288,18 @@ class FileLoader:
 
     ### Check the number of section and segment
     def sNumber(self):
+        load=0
+        for segment in self.file.iter_segments():
+            if segment.header['p_type'] == 'PT_LOAD':
+                load+=1
         if self.e_phnum == 0 or self.e_shnum == 0:
-            print("Unusual number of segment or sections : {} segment(s) and {} section(s)".format(self.e_phnum,self.e_shnum))
+            print("Unusual number of segment or sections : {} segment(s) and {} section(s) ({} PT_LOAD segment(s))".format(self.e_phnum,self.e_shnum,load))
         else:
-            print("There is {} segment(s) and {} section(s)".format(self.e_phnum,self.e_shnum))
+            print("There is {} segment(s) and {} section(s) ({} PT_LOAD segment(s))".format(self.e_phnum,self.e_shnum,load))
 
 
     ### Check the entry point
     def entryPoint(self):
-        #Check for weird entry point
 
         (sh_name, sh_type) = get_section_name(self.file,hex(self.e_entry),self.e_shstrndx)
         p_type = get_segment_name(self.file,hex(self.e_entry))
