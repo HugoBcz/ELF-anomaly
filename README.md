@@ -22,8 +22,10 @@ python3 main.py your_elffile_path --options
 
 List of available options for your analysis :
 
-```python
+```text
 [-w],[--write], Write the binary in a txt file
+[-e],[--entry_point], Change entry point
+[-n],[--none], No print
 [-t], type=int, default=6, Change the default threshold for the entropy
 ```
 
@@ -108,3 +110,12 @@ Check if the string table index given in the header table correspond to the stri
 
 ### Entry point
 
+```python
+def entryPoint(self):
+```
+
+Prints where the entry_point points in the ELF file. If it point in the middle of a section, it raises an alert.
+
+### Change Entry point
+
+When you select the change_entry_point option (-e), it switch the new entry point to the address of the .text section and create an new ELF file in the output directory. If there is no .text section, it doesn't change the entrypoint.

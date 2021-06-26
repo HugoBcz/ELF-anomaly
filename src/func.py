@@ -1,4 +1,5 @@
-import sys 
+import sys
+import lief
 import math
 from math import log
 import numpy as np
@@ -32,6 +33,24 @@ def get_segment_name(file,address):
 def overlap_address(addr1,addr2,addr3,addr4):
     return (addr1 <= addr3 and addr3 < addr2) or (addr3 <= addr1 and addr1 < addr4)
 
+def compute_entry_point(file,entrypoint,e_shstrndx):
+    (sh_name, sh_type) = get_section_name(file,hex(entrypoint),e_shstrndx)
+    p_type = get_segment_name(file,hex(entrypoint))
+    if sh_name != ".text":
+        try:
+            section = file.get_section_by_name('.text')
+            addr = section.header['sh_addr']
+        except:
+            addr = entrypoint
+        return addr
+
+def changeEntryPoint(file, entry_point,path):
+        e_shstrndx = file.header["e_shstrndx"]
+        new_e = compute_entry_point(file, entry_point,e_shstrndx)
+        binary = lief.parse(path)
+        header = binary.header
+        header.entrypoint = new_e
+        binary.write("output/sample")
 
 
 def compute_entropy(binary):

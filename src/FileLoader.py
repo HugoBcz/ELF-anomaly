@@ -1,5 +1,6 @@
 import json
 import sys
+
 from elftools.common.py3compat import bytes2str
 from elftools.elf.elffile import ELFFile
 from elftools.elf.sections import NullSection, StringTableSection, SymbolTableSection
@@ -9,6 +10,7 @@ from func import compute_entropy
 from func import get_section_name
 from func import get_segment_name
 from func import overlap_address
+from func import changeEntryPoint
 
 class FileLoader:
 
@@ -67,7 +69,7 @@ class FileLoader:
                         s[name]=entropy
                     else:
                         s[section.header['sh_name']]
-        if s == []:
+        if s == {}:
             print("General entropy is normal")
         else:
             print("Some section have unusual high entropy : {}".format(s))
@@ -81,14 +83,14 @@ class FileLoader:
             header = segment.header
             addr = header["p_vaddr"]
             size = header['p_memsz']
+            addr1,addr2 = '0x'+'0'*(9-len(hex(addr)))+hex(addr)[2:],'0x'+'0'*(9-len(hex(addr+size)))+hex(addr+size)[2:]
             if segments!=[]:
                 for seg in segments:
-                    addr1,addr2 = hex(addr),hex(addr+size)
                     addr3,addr4,p_type = seg
                     if overlap_address(addr1,addr2,addr3,addr4):
                         print("Overlapping detected between two segments: Range [{}-{}],{} overlap range [{}-{}],{}".format(addr1,addr2,header['p_type'],addr3,addr4,p_type))
                         overlap = True
-            segments.append((hex(addr),hex(addr+size),header['p_type']))
+            segments.append((addr1,addr2,header['p_type']))
         if not overlap:
             print("No overlap detected between segments")
         
@@ -128,12 +130,11 @@ class FileLoader:
                 data = self.file.get_section_by_name('.data')
                 bss = self.file.get_section_by_name('.bss')
                 
-                
                 flag = bin(header['p_flags'])[2:]
                 permission = ["READ","WRITE","EXECUTE"]
                 for index in range(3):
                     if flag[index] == '0':
-                        permission.pop(index)
+                        permission[index] = ""
                 
                 
                 if segment.section_in_segment(text):
@@ -161,7 +162,7 @@ class FileLoader:
             f = bin(flag)[-3:]
             for index in range(3):
                     if f[index] == '0':
-                        permission.pop(index)
+                        permission[index]
             if flag != 6:
                 print("Permission for .text section should be SHF_ALLOC,SHF_EXECINSTR but {} have been found".format(permission))
                 problem = True
@@ -176,7 +177,7 @@ class FileLoader:
             f = bin(flag)[-3:]
             for index in range(3):
                     if f[index] == '0':
-                        permission.pop(index)
+                        permission[index]
             if flag != 3:
                 print("Permission for .data section should be SHF_ALLOC,SHF_WRITE but {} have been found".format(permission))
                 problem = True
@@ -190,7 +191,7 @@ class FileLoader:
             f = bin(flag)[-3:]
             for index in range(3):
                     if f[index] == '0':
-                        permission.pop(index)
+                        permission[index]
             if flag != 3:
                 print("Permission for .bss section should be SHF_ALLOC,SHF_WRITE but {} have been found".format(permission))
                 problem = True
@@ -204,7 +205,7 @@ class FileLoader:
             f = bin(flag)[-3:]
             for index in range(3):
                     if f[index] == '0':
-                        permission.pop(index)
+                        permission[index]
             if flag != 2:
                 print("Permission for .rodata section should be SHF_ALLOC but {} have been found".format(permission))
                 problem = True
@@ -218,7 +219,7 @@ class FileLoader:
             f = bin(flag)[-3:]
             for index in range(3):
                     if f[index] == '0':
-                        permission.pop(index)
+                        permission[index]
             if flag != 6:
                 print("Permission for .init section should be SHF_ALLOC, SHF_EXECINSTR but {} have been found".format(permission))
                 problem = True
@@ -232,7 +233,7 @@ class FileLoader:
             f = bin(flag)[-3:]
             for index in range(3):
                     if f[index] == '0':
-                        permission.pop(index)
+                        permission[index]
             if flag != 6:
                 print("Permission for .fini section should be SHF_ALLOC, SHF_EXECINSTR but {} have been found".format(permission))
                 problem = True
@@ -246,7 +247,7 @@ class FileLoader:
             f = bin(flag)[-3:]
             for index in range(3):
                     if f[index] == '0':
-                        permission.pop(index)
+                        permission[index]
             if flag != 2:
                 print("Permission for .dynstr section should be SHF_ALLOC but {} have been found".format(permission))
                 problem = True
@@ -260,7 +261,7 @@ class FileLoader:
             f = bin(flag)[-3:]
             for index in range(3):
                     if f[index] == '0':
-                        permission.pop(index)
+                        permission[index]
             if flag != 2:
                 print("Permission for .dynsym section should be SHF_ALLOC but {} have been found".format(permission))
                 problem = True
@@ -274,7 +275,7 @@ class FileLoader:
             f = bin(flag)[-3:]
             for index in range(3):
                     if f[index] == '0':
-                        permission.pop(index)
+                        permission[index]
             if flag != 3:
                 print("Permission for .init_array section should be SHF_ALLOC,SHF_WRITE but {} have been found".format(permission))
                 problem = True
@@ -288,7 +289,7 @@ class FileLoader:
             f = bin(flag)[-3:]
             for index in range(3):
                     if f[index] == '0':
-                        permission.pop(index)
+                        permission[index]
             if flag != 3:
                 print("Permission for .fini_array section should be SHF_ALLOC,SHF_WRITE but {} have been found".format(permission))
                 problem = True
@@ -332,6 +333,11 @@ class FileLoader:
         (sh_name, sh_type) = get_section_name(self.file,hex(self.e_entry),self.e_shstrndx)
         p_type = get_segment_name(self.file,hex(self.e_entry))
         print("Entry point to section {} in segment {}".format(sh_name,p_type))
+        
+        section = self.file.get_section_by_name(sh_name)
+        addr = section.header['sh_addr']
+        if addr != self.e_entry:
+            print("You should change the entry point, it doesn't point at the beginning of {}".format(sh_name))
 
 
 
@@ -340,13 +346,19 @@ class FileLoader:
         sym = False
         symbol = []
         for section in self.file.iter_sections():
+            stringTable = self.file.get_section(self.e_shstrndx)
+            if isinstance(stringTable,StringTableSection):
+                name = stringTable.get_string(section.header['sh_name'])
+            else:
+                name = section.header['sh_name']
             if isinstance(section,SymbolTableSection):
                 sym = True
                 for s in section.iter_symbols():
                     symbol.append(s.name)
-                print("Instance of symbol table found : {}".format(symbol))
+                print("Instance of symbol table found : {} {}\n".format(name,symbol))
         if not sym:
             print("There is no instance of symbol table")
+
 
     ### Check the string table index
     def stringTable(self):
@@ -355,6 +367,11 @@ class FileLoader:
             print("The string table index is correct")
         else:
             print("The string table index is wrong")
+
+    
+    def changeEPoint(self):
+        changeEntryPoint(self.file,self.e_entry,self.path)
+
 
     def test(self):
         pass
