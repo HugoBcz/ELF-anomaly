@@ -62,8 +62,11 @@ class FileLoader:
 
                     stringTable = self.file.get_section(self.e_shstrndx)
                     offset = section.header['sh_name']
-                    name = stringTable.get_string(offset)
-                    s[name]=entropy
+                    if isinstance(stringTable,StringTableSection):
+                        name = stringTable.get_string(offset)
+                        s[name]=entropy
+                    else:
+                        s[section.header['sh_name']]
         if s == []:
             print("General entropy is normal")
         else:
@@ -99,7 +102,10 @@ class FileLoader:
             addr = header["sh_addr"]
             size = header['sh_size']
             stringTable = self.file.get_section(self.e_shstrndx)
-            name = stringTable.get_string(header['sh_name'])
+            if isinstance(stringTable,StringTableSection):
+                name = stringTable.get_string(header['sh_name'])
+            else:
+                name = header['sh_name']
             addr1,addr2 = '0x'+'0'*(9-len(hex(addr)))+hex(addr)[2:],'0x'+'0'*(9-len(hex(addr+size)))+hex(addr+size)[2:]
             if sections!=[]:
                 for seg in sections:
@@ -342,6 +348,13 @@ class FileLoader:
         if not sym:
             print("There is no instance of symbol table")
 
+    ### Check the string table index
+    def stringTable(self):
+        stringTable = self.file.get_section(self.e_shstrndx)
+        if isinstance(stringTable,StringTableSection):
+            print("The string table index is correct")
+        else:
+            print("The string table index is wrong")
 
     def test(self):
         pass

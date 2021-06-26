@@ -17,6 +17,8 @@ def get_section_name(file,address,e_shstrndx):
             if isinstance(stringTable,StringTableSection):
                 name = header['sh_name']
                 return stringTable.get_string(name), header['sh_type']
+            else:
+                return header['sh_name'], header['sh_type']
     
 
 def get_segment_name(file,address):

@@ -64,6 +64,11 @@ def main():
     print("Symbol table\n")
     f.symbolTable()
 
+    #Check string table index
+    print_dashline()
+    print("String table index\n")
+    f.stringTable()
+
     #Check for weird entry point
     print_dashline()
     print("Entry point\n")
