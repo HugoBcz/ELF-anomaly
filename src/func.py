@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from elftools.elf.elffile import ELFFile
 from elftools.elf.sections import NullSection, StringTableSection, SymbolTableSection
 
-
+### Get section name by address
 def get_section_name(file,address,e_shstrndx):
     for sections in file.iter_sections():
         header = sections.header
@@ -21,7 +21,7 @@ def get_section_name(file,address,e_shstrndx):
             else:
                 return header['sh_name'], header['sh_type']
     
-
+### Get segment name by address
 def get_segment_name(file,address):
     for segment in file.iter_segments():
         header = segment.header
@@ -30,9 +30,12 @@ def get_segment_name(file,address):
         if (hex(addr) <= address) and (address < hex(addr + size)):
             return header['p_type']
 
+### Check if two range of address overlap
 def overlap_address(addr1,addr2,addr3,addr4):
     return (addr1 <= addr3 and addr3 < addr2) or (addr3 <= addr1 and addr1 < addr4)
 
+
+### Compute new entry point
 def compute_entry_point(file,entrypoint,e_shstrndx):
     (sh_name, sh_type) = get_section_name(file,hex(entrypoint),e_shstrndx)
     p_type = get_segment_name(file,hex(entrypoint))
@@ -44,6 +47,7 @@ def compute_entry_point(file,entrypoint,e_shstrndx):
             addr = entrypoint
         return addr
 
+### Change entry point
 def changeEntryPoint(file, entry_point,path):
     e_shstrndx = file.header["e_shstrndx"]
     new_e = compute_entry_point(file, entry_point,e_shstrndx)
@@ -53,11 +57,10 @@ def changeEntryPoint(file, entry_point,path):
     binary.write("output/sample")
 
 
+### Compute the entropy of a binary file
 def compute_entropy(binary):
-    
     byteArr = list(binary)
     fileSize = len(byteArr) 
-
     #Calculate the frequency for each byte
     freq = [] 
     for i in range(256): 
@@ -66,13 +69,11 @@ def compute_entropy(binary):
             if byte == i: 
                 counter += 1 
         freq.append(float(counter) / fileSize) 
-
     #Compute Shannon entropy
     ent = 0.0 
     for f in freq: 
         if f > 0: 
             ent = ent + f * log(f, 2) 
     ent = -ent
-   
     return ent, freq
 

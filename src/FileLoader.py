@@ -379,7 +379,7 @@ class FileLoader:
         ### changeStringTableIndex is in this file
         changeStringTableIndex(self.file,self.path)
 
-
+### Change the string table index
 def changeStringTableIndex(file,path):
     string_index = file.header["e_shstrndx"]
     index=-1
