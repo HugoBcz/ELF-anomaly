@@ -70,7 +70,7 @@ class FileLoader:
             print("Some section have unusual high entropy : {}".format(s))
 
 
-    ### Check for potential overlapping PT_LOAD segments
+    ### Check for potential overlapping segments
     def overlappingSegments(self):
         segments = []
         overlap = False
@@ -88,6 +88,28 @@ class FileLoader:
             segments.append((hex(addr),hex(addr+size),header['p_type']))
         if not overlap:
             print("No overlap detected between segments")
+        
+    
+    ### Check for potential overlapping sections
+    def overlappingSections(self):
+        sections = []
+        overlap = False
+        for section in self.file.iter_sections():
+            header = section.header
+            addr = header["sh_addr"]
+            size = header['sh_size']
+            stringTable = self.file.get_section(self.e_shstrndx)
+            name = stringTable.get_string(header['sh_name'])
+            addr1,addr2 = '0x'+'0'*(9-len(hex(addr)))+hex(addr)[2:],'0x'+'0'*(9-len(hex(addr+size)))+hex(addr+size)[2:]
+            if sections!=[]:
+                for seg in sections:
+                    addr3,addr4,sh_name = seg
+                    if overlap_address(addr1,addr2,addr3,addr4):
+                        print("Overlapping detected between two sections: Range [{}-{}],{} overlap range [{}-{}],{}".format(addr1,addr2,name,addr3,addr4,sh_name))
+                        overlap = True
+            sections.append((addr1,addr2,name))
+        if not overlap:
+            print("No overlap detected between sections")
 
     ### Check for unusual segments permissions
     def segmentPermissions(self):
