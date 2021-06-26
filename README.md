@@ -124,3 +124,8 @@ When you select the change_entry_point option (-e), it switch the new entry poin
 ### Change String table index
 
 When you select the change_string_table_index (-s), it look for a section of type **StringTableSection** in the ELF file. If it find one, it change the index string stable in the header, if not it doesn't change anything.
+
+## Example of analysis
+
+![Example](/images/example.png)
+Format: ![Alt Text](url)
