@@ -36,6 +36,7 @@ def main():
     #Check for potential overlapping segments
     print_dashline()
     print("Potential overlapping segments\n")
+    print("(Segments overlapping doesn't always anomaly, look carefully to the overlap between two PT_LOAD segments)\n")
     f.overlappingSegments()
 
     #Check for unusual segment permissions

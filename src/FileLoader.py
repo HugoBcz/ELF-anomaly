@@ -76,19 +76,18 @@ class FileLoader:
         overlap = False
         for segment in self.file.iter_segments():
             header = segment.header
-            if header['p_type'] == 'PT_LOAD':
-                addr = header["p_vaddr"]
-                size = header['p_memsz']
-                if segments!=[]:
-                    for seg in segments:
-                        addr1,addr2 = hex(addr),hex(addr+size)
-                        addr3,addr4 = seg
-                        if overlap_address(addr1,addr2,addr3,addr4):
-                            print("Overlapping detected between two PT_LOAD segments: Range [{}-{}] overlap range [{}-{}]".format(addr1,addr2,addr3,addr4))
-                            overlap = True
-                segments.append((hex(addr),hex(addr+size)))
+            addr = header["p_vaddr"]
+            size = header['p_memsz']
+            if segments!=[]:
+                for seg in segments:
+                    addr1,addr2 = hex(addr),hex(addr+size)
+                    addr3,addr4,p_type = seg
+                    if overlap_address(addr1,addr2,addr3,addr4):
+                        print("Overlapping detected between two segments: Range [{}-{}],{} overlap range [{}-{}],{}".format(addr1,addr2,header['p_type'],addr3,addr4,p_type))
+                        overlap = True
+            segments.append((hex(addr),hex(addr+size),header['p_type']))
         if not overlap:
-            print("No overlap detected between PT_LOAD segments")
+            print("No overlap detected between segments")
 
     ### Check for unusual segments permissions
     def segmentPermissions(self):
@@ -136,7 +135,7 @@ class FileLoader:
             for index in range(3):
                     if f[index] == '0':
                         permission.pop(index)
-            if flag != '6':
+            if flag != 6:
                 print("Permission for .text section should be SHF_ALLOC,SHF_EXECINSTR but {} have been found".format(permission))
                 problem = True
 
@@ -151,7 +150,7 @@ class FileLoader:
             for index in range(3):
                     if f[index] == '0':
                         permission.pop(index)
-            if flag != '3':
+            if flag != 3:
                 print("Permission for .data section should be SHF_ALLOC,SHF_WRITE but {} have been found".format(permission))
                 problem = True
         except :
@@ -165,7 +164,7 @@ class FileLoader:
             for index in range(3):
                     if f[index] == '0':
                         permission.pop(index)
-            if flag != '3':
+            if flag != 3:
                 print("Permission for .bss section should be SHF_ALLOC,SHF_WRITE but {} have been found".format(permission))
                 problem = True
         except :
@@ -179,14 +178,100 @@ class FileLoader:
             for index in range(3):
                     if f[index] == '0':
                         permission.pop(index)
-            if flag != '2':
-                print("Permission for .data section should be SHF_ALLOC but {} have been found".format(permission))
+            if flag != 2:
+                print("Permission for .rodata section should be SHF_ALLOC but {} have been found".format(permission))
                 problem = True
         except :
             print("There is no .rodata sections")
         
+        try:
+            data = self.file.get_section_by_name('.init')
+            flag = data.header['sh_flags']
+            permission = ["SHF_EXECINSTR","SHF_ALLOC","SHF_WRITE"]
+            f = bin(flag)[-3:]
+            for index in range(3):
+                    if f[index] == '0':
+                        permission.pop(index)
+            if flag != 6:
+                print("Permission for .init section should be SHF_ALLOC, SHF_EXECINSTR but {} have been found".format(permission))
+                problem = True
+        except :
+            print("There is no .init sections")
+        
+        try:
+            data = self.file.get_section_by_name('.fini')
+            flag = data.header['sh_flags']
+            permission = ["SHF_EXECINSTR","SHF_ALLOC","SHF_WRITE"]
+            f = bin(flag)[-3:]
+            for index in range(3):
+                    if f[index] == '0':
+                        permission.pop(index)
+            if flag != 6:
+                print("Permission for .fini section should be SHF_ALLOC, SHF_EXECINSTR but {} have been found".format(permission))
+                problem = True
+        except :
+            print("There is no .fini sections")
+        
+        try:
+            data = self.file.get_section_by_name('.dynstr')
+            flag = data.header['sh_flags']
+            permission = ["SHF_EXECINSTR","SHF_ALLOC","SHF_WRITE"]
+            f = bin(flag)[-3:]
+            for index in range(3):
+                    if f[index] == '0':
+                        permission.pop(index)
+            if flag != 2:
+                print("Permission for .dynstr section should be SHF_ALLOC but {} have been found".format(permission))
+                problem = True
+        except :
+            print("There is no .dynstr sections")
+        
+        try:
+            data = self.file.get_section_by_name('.dynsym')
+            flag = data.header['sh_flags']
+            permission = ["SHF_EXECINSTR","SHF_ALLOC","SHF_WRITE"]
+            f = bin(flag)[-3:]
+            for index in range(3):
+                    if f[index] == '0':
+                        permission.pop(index)
+            if flag != 2:
+                print("Permission for .dynsym section should be SHF_ALLOC but {} have been found".format(permission))
+                problem = True
+        except :
+            print("There is no .dynsym sections")
+        
+        try:
+            data = self.file.get_section_by_name('.init_array')
+            flag = data.header['sh_flags']
+            permission = ["SHF_EXECINSTR","SHF_ALLOC","SHF_WRITE"]
+            f = bin(flag)[-3:]
+            for index in range(3):
+                    if f[index] == '0':
+                        permission.pop(index)
+            if flag != 3:
+                print("Permission for .init_array section should be SHF_ALLOC,SHF_WRITE but {} have been found".format(permission))
+                problem = True
+        except :
+            print("There is no .init_array sections")
+        
+        try:
+            data = self.file.get_section_by_name('.fini_array')
+            flag = data.header['sh_flags']
+            permission = ["SHF_EXECINSTR","SHF_ALLOC","SHF_WRITE"]
+            f = bin(flag)[-3:]
+            for index in range(3):
+                    if f[index] == '0':
+                        permission.pop(index)
+            if flag != 3:
+                print("Permission for .fini_array section should be SHF_ALLOC,SHF_WRITE but {} have been found".format(permission))
+                problem = True
+        except :
+            print("There is no .fini_array sections")
+        
         if not problem:
             print("No strange section permissions have been reported")
+        
+        
 
         
     ### Check the program interpreter
